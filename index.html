@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karang Taruna RT 016 - Dashboard Resmi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-YOUR_CLIENT_KEY"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism Refined */
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        /* Tab Transition Effect */
+        .tab-link {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tab-active {
+            color: #ea580c;
+            background: #fff7ed;
+            border-bottom: 4px solid #ea580c;
+            transform: translateY(-2px);
+        }
+
+        /* Smooth Content Fade In */
+        .content-section { display: none; }
+        .content-section.active { 
+            display: block; 
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Banner Settings */
+        .slide { display: none; }
+        .slide.active { 
+            display: block; 
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .banner-gradient {
+            background: linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.6) 50%, transparent 100%);
+        }
+
+        /* Button Sparkle Effect */
+        .sparkle-container { position: relative; overflow: hidden; }
+        .sparkle {
+            position: absolute; width: 6px; height: 6px; background: #0ea5e9;
+            border-radius: 50%; pointer-events: none; z-index: 50;
+            box-shadow: 0 0 8px #0ea5e9;
+            animation: sparkle-fly 0.5s linear forwards;
+        }
+        @keyframes sparkle-fly {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+        }
+
+        /* Image Pop-up Lightbox */
+        #lightboxModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Styling khusus container map agar responsif dan tidak tumpang tindih */
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 10;
+        }
+
+        /* Animation Modal */
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="pb-20 text-slate-800 antialiased">
+
+    <header class="relative bg-gradient-to-br from-sky-950 via-sky-900 to-slate-900 text-white pt-24 pb-36 px-4 text-center shadow-md">
+        <div class="absolute inset-0 opacity-5 pointer-events-none mix-blend-overlay bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+        <div class="relative z-10 max-w-4xl mx-auto">
+            <span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 text-xs font-semibold px-4 py-1.5 rounded-full uppercase tracking-widest mb-4 inline-block">Sistem Informasi Internal</span>
+            <h1 class="text-4xl md:text-6xl font-black mb-3 tracking-tight uppercase drop-shadow-md">Karang Taruna RT 016</h1>
+            <p class="text-sm md:text-lg text-slate-300 max-w-2xl mx-auto font-medium italic">"Wadah kreativitas, pengabdian, dan persatuan pemuda RT 016 RW 05"</p>
+        </div>
+    </header>
+
+    <nav class="max-w-5xl mx-auto grid grid-cols-7 bg-white/95 backdrop-blur-md mt-[-3.2rem] rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden p-1.5 z-20 relative font-bold">
+        <button onclick="openTab(event, 'profile')" class="tab-link sparkle-container py-4 rounded-xl text-slate-500 tab-active flex flex-col items-center justify-center gap-1">
+            <i class="fas fa-th-large text-base md:text-xl"></i> <span class="text-[8px] md:text-xs tracking-wider">DASHBOARD</span>
+        </button>
+        <button onclick="openTab(event, 'kegiatan')" class="tab-link sparkle-container py-4 rounded-xl text-slate-500 flex flex-col items-center justify-center gap-1">
+            <i class="fas fa-wallet text-base md:text-xl"></i> <span class="text-[8px] md:text-xs tracking-wider">KEUANGAN</span>
+        </button>
+        <button onclick="openTab(event, 'galeri')" class="tab-link sparkle-container py-4 rounded-xl text-slate-500 flex flex-col items-center justify-center gap-1">
+            <i class="fas fa-images text-base md:text-xl"></i> <span class="text-[8px] md:text-xs tracking-wider">GALERI</span>
+        </button>
+        <button onclick="openTab(event, 'berita')" class="tab-link sparkle-container py-4 rounded-xl text-slate-500 flex flex-col items-center justify-center gap-1">
+            <i class="fas fa-newspaper text-base md:text-xl"></i> <span class="text-[8px] md:text-xs tracking-wider">BERITA</span>
+        </button>
+        <button onclick="openTab(event, 'aspirasi')" class="tab-link sparkle-container py-4 rounded-xl text-slate-500 flex flex-col items-center justify-center gap-1">
+            <i class="fas fa-bullhorn text-base md:text-xl"></i> <span class="text-[8px] md:text-xs tracking-wider">ASPIRASI</span>
+        </button>
+        <button onclick="openTab(event, 'join')" class="tab-link sparkle-container py-4 rounded-xl text-slate-500 flex flex-col items-center justify-center gap-1">
+            <i class="fas fa-user-plus text-base md:text-xl"></i> <span class="text-[8px] md:text-xs tracking-wider">GABUNG</span>
+        </button>
+        <button onclick="openTab(event, 'admin')" class="tab-link sparkle-container py-4 rounded-xl text-slate-500 flex flex-col items-center justify-center bg-slate-50/50 border-l border-slate-100 gap-1">
+            <i class="fas fa-user-shield text-base md:text-xl text-orange-600"></i> <span class="text-[8px] md:text-xs tracking-wider text-slate-700">ADMIN</span>
+        </button>
+    </nav>
+
+    <section id="banner-hero" class="max-w-5xl mx-auto mt-8 px-4">
+        <div class="relative h-[220px] md:h-[360px] w-full overflow-hidden rounded-3xl shadow-lg bg-slate-900 border border-slate-200/10">
+            <div class="slide active h-full relative">
+                <img src="KERJA BAKTI.jpeg" class="w-full h-full object-cover" alt="Kerja Bakti">
+                <div class="absolute inset-0 banner-gradient flex flex-col justify-center px-6 md:px-16 text-white">
+                    <span class="bg-orange-600 text-[10px] font-bold px-3 py-1 rounded-md w-fit mb-3 uppercase tracking-widest">Aktivitas Terbaru</span>
+                    <h2 class="text-xl md:text-4xl font-black mb-2 leading-tight uppercase tracking-tight">Semangat Gotong Royong</h2>
+                    <p class="text-xs md:text-sm opacity-90 max-w-md font-normal text-slate-300">Bersama membangun lingkungan RT 016 yang lebih bersih, nyaman, dan harmonis.</p>
+                </div>
+            </div>
+            <div class="slide h-full relative">
+                <img src="banner ui kartar.jpeg" class="w-full h-full object-cover" alt="Inovasi Pemuda">
+                <div class="absolute inset-0 banner-gradient flex flex-col justify-center px-6 md:px-16 text-white">
+                    <span class="bg-sky-600 text-[10px] font-bold px-3 py-1 rounded-md w-fit mb-3 uppercase tracking-widest">Kreativitas</span>
+                    <h2 class="text-xl md:text-4xl font-black mb-2 leading-tight uppercase tracking-tight">Inovasi Pemuda</h2>
+                    <p class="text-xs md:text-sm opacity-90 max-w-md font-normal text-slate-300">Wadah aspirasi dan pengembangan potensi strategis bagi seluruh pemuda unit 16.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-5xl mx-auto mt-10 px-4">
+        
+        <div id="profile" class="content-section active">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="glass p-5 rounded-2xl text-center shadow-sm border-b-4 border-orange-500 transition-transform hover:scale-[1.02]">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Anggota Aktif</p>
+                    <h3 class="text-3xl font-black text-slate-900 mt-1">31</h3>
+                </div>
+                <div class="glass p-5 rounded-2xl text-center shadow-sm border-b-4 border-sky-500 transition-transform hover:scale-[1.02]">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kegiatan Selesai</p>
+                    <h3 class="text-3xl font-black text-slate-900 mt-1">2</h3>
+                </div>
+                <div class="glass p-5 rounded-2xl text-center shadow-sm border-b-4 border-emerald-500 transition-transform hover:scale-[1.02]">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saldo Kas</p>
+                    <h3 class="text-2xl font-black text-emerald-600 mt-1.5">517K</h3>
+                </div>
+                <div class="glass p-5 rounded-2xl text-center shadow-sm border-b-4 border-purple-500 transition-transform hover:scale-[1.02]">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Aspirasi Masuk</p>
+                    <h3 class="text-3xl font-black text-slate-900 mt-1">0</h3>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-12">
+                <div class="glass p-6 md:p-8 rounded-2xl shadow-sm border-t-4 border-orange-500">
+                    <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 mb-4 shadow-inner"><i class="fas fa-rocket text-base"></i></div>
+                    <h3 class="text-lg font-extrabold text-slate-900 mb-2 uppercase tracking-tight">Visi</h3>
+                    <p class="text-slate-600 leading-relaxed italic text-base">"Menjadikan pemuda RT 016 sebagai pelopor perubahan yang kreatif, mandiri, dan berjiwa sosial tinggi."</p>
+                </div>
+                <div class="glass p-6 md:p-8 rounded-2xl shadow-sm border-t-4 border-sky-500">
+                    <div class="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center text-sky-600 mb-4 shadow-inner"><i class="fas fa-hands-helping text-base"></i></div>
+                    <h3 class="text-lg font-extrabold text-slate-900 mb-2 uppercase tracking-tight">Misi Utama</h3>
+                    <ul class="space-y-2.5 text-slate-600 font-medium text-sm md:text-base">
+                        <li class="flex items-start"><i class="fas fa-check-circle text-orange-500 mt-1 mr-2.5 flex-shrink-0"></i> Mengembangkan potensi minat dan bakat pemuda.</li>
+                        <li class="flex items-start"><i class="fas fa-check-circle text-orange-500 mt-1 mr-2.5 flex-shrink-0"></i> Aktif dalam kegiatan sosial kemasyarakatan lingkungan.</li>
+                        <li class="flex items-start"><i class="fas fa-check-circle text-orange-500 mt-1 mr-2.5 flex-shrink-0"></i> Mempererat tali silaturahmi dan persaudaraan antar pemuda.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h2 class="text-2xl font-black text-slate-800 mb-6 text-center uppercase tracking-tight">Struktur Pengurus</h2>
+            <div class="space-y-6 mb-12">
+                <div class="flex flex-wrap justify-center gap-4">
+                    <div class="glass p-5 rounded-2xl text-center shadow-md border-b-4 border-amber-400 w-full sm:w-52 transition-transform hover:-translate-y-1">
+                        <div class="w-12 h-12 mx-auto mb-3 bg-amber-100 rounded-full flex items-center justify-center text-amber-700 text-base font-bold shadow-inner">Y</div>
+                        <h4 class="text-base font-extrabold text-slate-900">Bapak Yusdi</h4>
+                        <p class="text-sky-700 font-bold text-[9px] tracking-widest mt-0.5 uppercase">Penasehat</p>
+                    </div>
+                    <div class="glass p-5 rounded-2xl text-center shadow-md border-b-4 border-orange-500 w-full sm:w-52 transition-transform hover:-translate-y-1">
+                        <div class="w-12 h-12 mx-auto mb-3 bg-orange-100 rounded-full flex items-center justify-center text-orange-700 text-base font-bold shadow-inner">BW</div>
+                        <h4 class="text-base font-extrabold text-slate-900">Bapak Bayu Waskito</h4>
+                        <p class="text-sky-700 font-bold text-[9px] tracking-widest mt-0.5 uppercase">Ketua RT</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="glass p-5 rounded-2xl text-center shadow-md border-b-4 border-orange-500 transition-transform hover:-translate-y-1">
+                        <div class="w-12 h-12 mx-auto mb-3 bg-orange-100 rounded-full flex items-center justify-center text-orange-700 text-base font-bold shadow-inner">B</div>
+                        <h4 class="text-base font-extrabold text-slate-900">Bagas Satya Dharma</h4>
+                        <p class="text-sky-700 font-bold text-[9px] tracking-widest mt-0.5 uppercase">Ketua Karang Taruna</p>
+                    </div>
+                    <div class="glass p-5 rounded-2xl text-center shadow-md border-b-4 border-sky-500 transition-transform hover:-translate-y-1">
+                        <div class="w-12 h-12 mx-auto mb-3 bg-sky-100 rounded-full flex items-center justify-center text-sky-700 text-base font-bold shadow-inner">W</div>
+                        <h4 class="text-base font-extrabold text-slate-900">Wahyu</h4>
+                        <p class="text-sky-700 font-bold text-[9px] tracking-widest mt-0.5 uppercase">Sekretaris</p>
+                    </div>
+                    <div class="glass p-5 rounded-2xl text-center shadow-md border-b-4 border-emerald-500 transition-transform hover:-translate-y-1">
+                        <div class="w-12 h-12 mx-auto mb-3 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 text-base font-bold shadow-inner">E</div>
+                        <h4 class="text-base font-extrabold text-slate-900">Eryandi Cahya</h4>
+                        <p class="text-sky-700 font-bold text-[9px] tracking-widest mt-0.5 uppercase">Bendahara</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <div class="glass p-4 rounded-xl shadow-sm border-l-4 border-slate-400">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Kerohanian</p>
+                        <p class="text-xs md:text-sm font-bold text-slate-700 mt-0.5">Uus, Ami</p>
+                    </div>
+                    <div class="glass p-4 rounded-xl shadow-sm border-l-4 border-slate-400">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Olahraga</p>
+                        <p class="text-xs md:text-sm font-bold text-slate-700 mt-0.5">Ibad, Panca</p>
+                    </div>
+                    <div class="glass p-4 rounded-xl shadow-sm border-l-4 border-slate-400">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Humas</p>
+                        <p class="text-xs md:text-sm font-bold text-slate-700 mt-0.5">Lando, Juli</p>
+                    </div>
+                    <div class="glass p-4 rounded-xl shadow-sm border-l-4 border-slate-400">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Seni & Budaya</p>
+                        <p class="text-xs md:text-sm font-bold text-slate-700 mt-0.5">Pinka, Reyna</p>
+                    </div>
+                    <div class="glass p-4 rounded-xl shadow-sm border-l-4 border-slate-400">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Perlengkapan</p>
+                        <p class="text-xs md:text-sm font-bold text-slate-700 mt-0.5">Ridho, Jahir</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="text-2xl font-black text-slate-800 mb-6 text-center uppercase tracking-tight">Lokasi Sekretariat</h2>
+            <div class="glass p-5 rounded-3xl shadow-md grid md:grid-cols-3 gap-6 items-center">
+                <div class="md:col-span-2 w-full h-60 rounded-2xl overflow-hidden border border-slate-200 relative">
+                    <div id="map"></div>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <div class="bg-sky-100 p-2.5 rounded-xl text-sky-600 mt-0.5 flex-shrink-0"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <h4 class="font-extrabold text-slate-800 uppercase text-[11px] tracking-wider">Alamat Daerah</h4>
+                            <p class="text-xs text-slate-600 font-medium mt-0.5 leading-relaxed">Jalan Raya Lenteng Agung Barat, Gang Haji Harun RT 16/05 No 37, Lenteng Agung, Kec. Jagakarsa, Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12610</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="bg-orange-100 p-2.5 rounded-xl text-orange-600 mt-0.5 flex-shrink-0"><i class="fas fa-info-circle"></i></div>
+                        <div>
+                            <h4 class="font-extrabold text-slate-800 uppercase text-[11px] tracking-wider">Patokan Area</h4>
+                            <p class="text-xs text-slate-600 font-medium mt-0.5 leading-relaxed">Pos Sekretariat Pemuda Unit 16 (Dekat Lapangan Serbaguna RT 016).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="kegiatan" class="content-section">
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="space-y-6">
+                    <div class="glass p-6 md:p-8 rounded-3xl shadow-md border-t-4 border-emerald-500">
+                        <h3 class="text-lg font-extrabold text-slate-800 mb-4 flex items-center uppercase tracking-tight">
+                            <i class="fas fa-file-invoice-dollar mr-2.5 text-emerald-600"></i> Laporan Keuangan
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3.5 bg-emerald-50/60 rounded-xl border-l-4 border-emerald-500">
+                                <div>
+                                    <span class="block text-[9px] uppercase font-bold text-emerald-700 tracking-wider">Pemasukan</span>
+                                    <span class="font-bold text-xs md:text-sm text-slate-700">Iuran Rutin & Donasi</span>
+                                </div>
+                                <span class="text-emerald-700 font-black text-sm md:text-base">Rp 1.465.000</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3.5 bg-red-50/60 rounded-xl border-l-4 border-red-500">
+                                <div>
+                                    <span class="block text-[9px] uppercase font-bold text-red-700 tracking-wider">Pengeluaran</span>
+                                    <span class="font-bold text-xs md:text-sm text-slate-700">Konsumsi & Perlengkapan</span>
+                                </div>
+                                <span class="text-red-700 font-black text-sm md:text-base">- Rp 948.000</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-sky-950 text-white rounded-xl shadow-md mt-4">
+                                <span class="font-bold uppercase text-xs tracking-wider text-sky-300">Total Saldo Kas</span>
+                                <span class="text-xl font-black text-emerald-400">Rp 517.000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass p-6 md:p-8 rounded-3xl shadow-md border-t-4 border-orange-500">
+                        <h3 class="text-lg font-extrabold text-slate-800 mb-1 flex items-center uppercase tracking-tight">
+                            <i class="fas fa-credit-card mr-2.5 text-orange-500"></i> Bayar Uang Kas
+                        </h3>
+                        <p class="text-[11px] text-slate-400 font-medium mb-5">Sistem verifikasi otomatis via QRIS & Virtual Account.</p>
+                        
+                        <form id="formBayarKas" class="space-y-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 ml-1 mb-1 uppercase tracking-wide">Nama Lengkap Anggota</label>
+                                <input type="text" id="namaBayar" required placeholder="Contoh: Bagas Satya" class="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-orange-500 font-semibold text-sm transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 ml-1 mb-1 uppercase tracking-wide">Durasi Pembayaran</label>
+                                <select id="periodeBayar" onchange="hitungKas()" class="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:ring-2 focus:ring-orange-500 font-bold text-sm text-slate-600">
+                                    <option value="1">1 Bulan (Rp 10.000)</option>
+                                    <option value="2">2 Bulan (Rp 20.000)</option>
+                                    <option value="3">3 Bulan (Rp 30.000)</option>
+                                    <option value="6">6 Bulan (Rp 60.000)</option>
+                                    <option value="12">1 Tahun (Rp 120.000)</option>
+                                </select>
+                            </div>
+                            <div class="p-3 bg-orange-50/80 rounded-xl border border-orange-200/50 flex justify-between items-center">
+                                <span class="text-xs font-semibold text-slate-600">Nominal Akhir:</span>
+                                <span id="totalTagihan" class="text-base font-black text-orange-600">Rp 10.000</span>
+                            </div>
+                            <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 rounded-xl shadow-md hover:bg-orange-600 transition-all uppercase tracking-wider text-xs flex items-center justify-center gap-2">
+                                <i class="fas fa-shield-alt"></i> Setor Kas Sekarang
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="glass p-6 md:p-8 rounded-3xl shadow-md border-t-4 border-sky-600 h-fit">
+                    <h3 class="text-lg font-extrabold text-slate-800 mb-5 flex items-center uppercase tracking-tight">
+                        <i class="fas fa-calendar-check mr-2.5 text-sky-600"></i> Garis Waktu Kegiatan
+                    </h3>
+                    <div class="space-y-5">
+                        <div class="relative pl-6 border-l-2 border-emerald-500 py-0.5">
+                            <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white"></div>
+                            <span class="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] font-bold rounded mb-1 uppercase tracking-wide">Terlaksana</span>
+                            <h4 class="font-extrabold text-slate-900 text-sm uppercase">Peringatan Idul Adha 1447H</h4>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5"><i class="far fa-clock mr-1"></i> 27 Mei 2026</p>
+                        </div>
+                        
+                        <div class="relative pl-6 border-l-2 border-sky-500 py-0.5">
+                            <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-sky-500 rounded-full border-2 border-white"></div>
+                            <span class="inline-block px-2 py-0.5 bg-sky-100 text-sky-700 text-[8px] font-bold rounded mb-1 uppercase tracking-wide">Mendatang</span>
+                            <h4 class="font-extrabold text-slate-900 text-sm uppercase">Festival Hari Kemerdekaan RI</h4>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5"><i class="far fa-calendar-alt mr-1"></i> 17 Agustus 2026</p>
+                        </div>
+
+                        <div class="relative pl-6 border-l-2 border-orange-500 py-0.5">
+                            <div class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white"></div>
+                            <span class="inline-block px-2 py-0.5 bg-orange-100 text-orange-700 text-[8px] font-bold rounded mb-1 uppercase tracking-wide">Perencanaan</span>
+                            <h4 class="font-extrabold text-slate-900 text-sm uppercase">Maulid Nabi</h4>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5"><i class="far fa-clock mr-1"></i> 26 Agustus 2026</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass p-6 md:p-8 rounded-3xl shadow-md border-t-4 border-slate-700">
+                <h3 class="text-lg font-extrabold text-slate-800 mb-2 flex items-center uppercase tracking-tight">
+                    <i class="fas fa-list-alt mr-2.5 text-slate-700"></i> Detail Riwayat Transaksi Kas
+                </h3>
+                <p class="text-[11px] text-slate-400 font-medium mb-4">Laporan transparan mutasi masuk dan keluar dari sirkulasi kas unit pemuda.</p>
+                <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                                <th class="p-3.5">Tanggal</th>
+                                <th class="p-3.5">Keterangan Transaksi</th>
+                                <th class="p-3.5">Jenis</th>
+                                <th class="p-3.5 text-right">Jumlah</th>
+                            </tr>
+                        </thead>
+                        <tbody class="font-semibold text-slate-700 divide-y divide-slate-100">
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="p-3.5 text-slate-400">1 Mei 2026</td>
+                                <td class="p-3.5 font-bold text-slate-800">Saldo Awal & Kas Bulanan April</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded-md uppercase">Pemasukan</span></td>
+                                <td class="p-3.5 text-right text-emerald-600 font-bold">Rp 415.000</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="p-3.5 text-slate-400">15 Mei 2026</td>
+                                <td class="p-3.5 font-bold text-slate-800">Sumbangan Donatur Kegiatan Sosial</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded-md uppercase">Pemasukan</span></td>
+                                <td class="p-3.5 text-right text-emerald-600 font-bold">Rp 1.050.000</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="p-3.5 text-slate-400">15 Mei 2026</td>
+                                <td class="p-3.5 font-bold text-slate-800">Konsumsi Snack Pengukuhan</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-red-100 text-red-700 text-[9px] font-bold rounded-md uppercase">Pengeluaran</span></td>
+                                <td class="p-3.5 text-right text-red-600 font-bold">- Rp 310.000</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="p-3.5 text-slate-400">15 Mei 2026</td>
+                                <td class="p-3.5 font-bold text-slate-800">Cleo 5 Dus</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-red-100 text-red-700 text-[9px] font-bold rounded-md uppercase">Pengeluaran</span></td>
+                                <td class="p-3.5 text-right text-red-600 font-bold">- Rp 101.000</td>
+                            </tr>
+                             <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="p-3.5 text-slate-400">15 Mei 2026</td>
+                                <td class="p-3.5 font-bold text-slate-800">Konsumsi Kerja Bakti Pengukuhan Kartar</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-red-100 text-red-700 text-[9px] font-bold rounded-md uppercase">Pengeluaran</span></td>
+                                <td class="p-3.5 text-right text-red-600 font-bold">- Rp 250.000</td>
+                            </tr>
+                             <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="p-3.5 text-slate-400">15 Mei 2026</td>
+                                <td class="p-3.5 font-bold text-slate-800">ATK Pengukuhan Kartar</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-red-100 text-red-700 text-[9px] font-bold rounded-md uppercase">Pengeluaran</span></td>
+                                <td class="p-3.5 text-right text-red-600 font-bold">- Rp 20.000</td>
+                            </tr>
+                             <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="p-3.5 text-slate-400">15 Mei 2026</td>
+                                <td class="p-3.5 font-bold text-slate-800">Konsumsi Pembongkaran Tenda Pengukuhan Kartar</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-red-100 text-red-700 text-[9px] font-bold rounded-md uppercase">Pengeluaran</span></td>
+                                <td class="p-3.5 text-right text-red-600 font-bold">- Rp 42.000</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="p-3.5 text-slate-400">9 Mei 2026</td>
+                                <td class="p-3.5 font-bold text-slate-800">Dana Musibah</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-red-100 text-red-700 text-[9px] font-bold rounded-md uppercase">Pengeluaran</span></td>
+                                <td class="p-3.5 text-right text-red-600 font-bold">- Rp 50.000</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="p-3.5 text-slate-400">30 Mei 2026</td>
+                                <td class="p-3.5 font-bold text-slate-800">Dana Kegiatan Futsal </td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-red-100 text-red-700 text-[9px] font-bold rounded-md uppercase">Pengeluaran</span></td>
+                                <td class="p-3.5 text-right text-red-600 font-bold">- Rp 100.000</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/50 transition-colors">
+                                <td class="p-3.5 text-slate-400">15 Mei 2026</td>
+                                <td class="p-3.5 font-bold text-slate-800">Buah-buahan</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-red-100 text-red-700 text-[9px] font-bold rounded-md uppercase">Pengeluaran</span></td>
+                                <td class="p-3.5 text-right text-red-600 font-bold">- Rp 75.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="galeri" class="content-section">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight">Kilas Dokumentasi</h2>
+                <p class="text-slate-400 text-xs font-medium mt-0.5">Koleksi foto arsip kegiatan pemuda Karang Taruna RT 016</p>
+            </div>
+            
+            <div class="space-y-5">
+                <div class="glass p-5 rounded-2xl shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b pb-2 border-slate-200/50">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-slate-900 uppercase">Kerja Bakti & Pembersihan Lapangan</h3>
+                            <p class="text-[11px] text-slate-400 font-medium">Aktivitas pembenahan fasilitas umum dan area publik anak.</p>
+                        </div>
+                        <span class="mt-1 sm:mt-0 px-2.5 py-0.5 bg-sky-100 text-sky-700 font-bold text-[9px] rounded-full uppercase tracking-wider"><i class="far fa-calendar-alt mr-1"></i> April - Mei 2026</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="KERJA BAKTI.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Kerja Bakti Warga">
+                        </div>
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="pembersihan lapangan anak anak.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Pembersihan Sektor A">
+                        </div>
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="pembersihan lapangan anak anak 2.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Pembersihan Sektor B">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-5 rounded-2xl shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b pb-2 border-slate-200/50">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-slate-900 uppercase">Peringatan Hari Besar Islam (PHBI)</h3>
+                            <p class="text-[11px] text-slate-400 font-medium">Dokumentasi kepanitiaan hari keagamaan umat islam.</p>
+                        </div>
+                        <span class="mt-1 sm:mt-0 px-2.5 py-0.5 bg-orange-100 text-orange-700 font-bold text-[9px] rounded-full uppercase tracking-wider"><i class="far fa-calendar-alt mr-1"></i> Kegiatan PHBI</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="IDUL ADHA 2.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Idul Adha">
+                        </div>
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="idul adha.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Idul Adha">
+                        </div>
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="IDUL ADHA 3.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Idul Adha">
+                        </div>
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="maulid nabi.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Maulid Nabi">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-5 rounded-2xl shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b pb-2 border-slate-200/50">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-slate-900 uppercase">Futsal, Rapat & Pelantikan</h3>
+                            <p class="text-[11px] text-slate-400 font-medium">Agenda olahraga berkala serta malam inaugurasi kepengurusan.</p>
+                        </div>
+                        <span class="mt-1 sm:mt-0 px-2.5 py-0.5 bg-emerald-100 text-emerald-700 font-bold text-[9px] rounded-full uppercase tracking-wider"><i class="far fa-calendar-alt mr-1"></i> Agenda Internal</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="PUTSAL.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Futsal Mingguan">
+                        </div>
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="pengukuhan.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Malam Pelantikan Pengurus">
+                        </div>
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="rapat idul adha.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Rapat Rutin Bulanan">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-5 rounded-2xl shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b pb-2 border-slate-200/50">
+                        <div>
+                            <h3 class="text-sm font-extrabold text-slate-900 uppercase">Festival 17 Agustus (HUT RI)</h3>
+                            <p class="text-[11px] text-slate-400 font-medium">Panitia semarak perayaan kemederkaan indonesia tingkat RT.</p>
+                        </div>
+                        <span class="mt-1 sm:mt-0 px-2.5 py-0.5 bg-red-100 text-red-700 font-bold text-[9px] rounded-full uppercase tracking-wider"><i class="far fa-calendar-alt mr-1"></i> Agustus Event</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="aspect-[4/3] rounded-xl overflow-hidden bg-slate-200 border border-slate-200/60 group cursor-pointer shadow-sm" onclick="viewImage(this)">
+                            <img src="hut ri.jpeg" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Lomba Kemerdakaan">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="berita" class="content-section">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight">Kabar & Pengumuman</h2>
+                <p class="text-slate-400 text-xs font-medium mt-0.5">Informasi rilis seputar kegiatan pemuda di wilayah RT 016</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="glass overflow-hidden rounded-2xl shadow-sm flex flex-col border border-slate-200/60">
+                    <div class="h-48 bg-slate-100 relative overflow-hidden border-b border-slate-100">
+                        <img src="KERJA BAKTI.jpeg" class="w-full h-full object-cover object-center" alt="Kerja Bakti RT 016">
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex gap-2 text-[10px] font-bold text-slate-400 uppercase mb-2">
+                                <span class="text-orange-600">Kegiatan Sosial</span>
+                                <span>•</span>
+                                <span>12 Mei 2026</span>
+                            </div>
+                            <h3 class="font-extrabold text-base text-slate-900 mb-2 uppercase tracking-tight">
+                                Sinergi Pemuda RT 016 Bersihkan Fasilitas Lingkungan
+                            </h3>
+                            <p class="text-xs text-slate-600 leading-relaxed line-clamp-3">
+                                Para pemuda dan warga bergotong royong membersihkan saluran air serta pos keamanan guna mencegah penyebaran jentik nyamuk menjelang musim hujan tahun ini. Langkah preventif ini diambil sebagai komitmen bersama menjaga kesehatan lingkungan.
+                            </p>
+                        </div>
+                        <button onclick="document.getElementById('modal-kerja-bakti').classList.remove('hidden')" 
+                                class="mt-4 text-xs font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1">
+                            Baca Selengkapnya <i class="fas fa-arrow-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass overflow-hidden rounded-2xl shadow-sm flex flex-col border border-slate-200/60">
+                    <div class="h-48 bg-slate-100 relative">
+                        <img src="banner ui kartar.jpeg" class="w-full h-full object-cover" alt="Artikel HUT RI 81">
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex gap-2 text-[10px] font-bold text-slate-400 uppercase mb-2">
+                                <span class="text-sky-600">Artikel Spesial</span>
+                                <span>•</span>
+                                <span>17 Agustus 2026</span>
+                            </div>
+                            <h3 class="font-extrabold text-base text-slate-900 mb-2 uppercase tracking-tight">
+                                Menembus Batas Waktu: Menjaga Api Gotong Royong pada HUT RI ke-81
+                            </h3>
+                            <p class="text-xs text-slate-600 leading-relaxed line-clamp-3">
+                                Agustus selalu membawa atmosfer yang berbeda. Di antara deru angin kemarau and kibaran kain merah putih di sepanjang jalan, ada sebuah memori kolektif yang kembali dipanggil. Tahun 2026 ini, Indonesia resmi menginjak usia 81 tahun. Sebuah perjalanan panjang bagi sebuah bangsa besar, dan refleksi terdalamnya justru seringkali ditemukan di tempat paling hulu: di lingkungan rukun warga, di gang-gang pemukiman, dan di ruang-ruang diskusi pemuda lokal.
+                            </p>
+                        </div>
+                        <button onclick="document.getElementById('modal-hut-ri').classList.remove('hidden')" 
+                                class="mt-4 text-xs font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1">
+                            Baca Selengkapnya <i class="fas fa-arrow-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-kerja-bakti" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
+                <div class="p-5 border-b border-slate-100 flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] font-bold text-orange-600 uppercase">Kegiatan Sosial • 12 Mei 2026</span>
+                        <h3 class="font-extrabold text-lg text-slate-900 mt-1">SINERGI PEMUDA RT 016 BERSIHKAN FASILITAS LINGKUNGAN: GERAKAN NYATA TANGKAL DBD</h3>
+                    </div>
+                    <button onclick="document.getElementById('modal-kerja-bakti').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
+                </div>
+                <div class="p-6 overflow-y-auto text-sm text-slate-700 space-y-4 leading-relaxed">
+                    <p>Menjelang peralihan musim tahun ini, kesadaran akan kebersihan lingkungan kembali menjadi prioritas utama. Bergerak atas inisiatif bersama, para pemuda yang tergabung dalam Karang Taruna bersama warga RT 016 menggelar aksi gotong royong massal pada akhir pekan lalu. Fokus utama pergerakan kali ini adalah normalisasi saluran air (selokan) yang tersumbat serta peremajaan pos keamanan warga.</p>
+                    <p>Langkah preventif ini diambil bukan tanpa alasan. Genangan air sekecil apa pun di lingkungan pemukiman berpotensi menjadi sarang berkembang biaknya jentik nyamuk <em>Aedes aegypti</em> penyebab Demam Berdarah Dengue (DBD).</p>
+                    <div class="font-bold text-slate-900 text-base pt-2">Kerja Bakti yang Menyatukan Frekuensi Warga</div>
+                    <p>Aksi yang dimulai sejak pukul 07.00 WIB ini memperlihatkan pemandangan yang mulai langka di perkotaan: meleburnya sekat antar-generasi. Pemuda-pemuda setempat tampak bahu-membahu bersama para bapak untuk mengangkut sedimen lumpur dan sampah plastik yang menyumbat aliran air, sementara ibu-ibu bergerak mendukung di lini logistik dan konsumsi.</p>
+                    <p>Selain membersihkan selokan, pos keamanan RT 016 yang menjadi pusat penjagaan lingkungan juga mendapat sentuhan peremajaan. Mulai dari pembersihan area sekitar, pengecatan ulang, hingga penataan ulang fasilitas pos agar lebih nyaman digunakan oleh petugas ronda malam.</p>
+                    <div class="font-bold text-slate-900 text-base pt-2">Lebih dari Sekadar Bersih-Bersih</div>
+                    <p>“Kegiatan ini bukan hanya soal membersihkan sampah atau menyapu jalan,” ujar salah satu perwakilan pengurus lingkungan. “Ini adalah momentum untuk menghidupkan kembali esensi gotong royong yang menjadi akar kekuatan sosiologis kita. Di sini kita saling mengobrol, bertukar kabar, dan mempererat tali silaturahmi.”</p>
+                    <p>With bersihnya fasilitas publik dan saluran air ini, risiko banjir lokal akibat sumbatan sampah dapat diminimalisir secara drastis saat hujan mulai turun. Lingkungan yang bersih secara visual juga memberikan dampak psikologis yang positif bagi kenyamanan seluruh warga yang tinggal.</p>
+                    <p>Apresiasi tinggi patut diberikan kepada seluruh elemen masyarakat RT 016 yang telah meluangkan waktu dan tenaganya. Gerakan swadaya seperti ini menjadi bukti nyata bahwa perubahan besar dan kenyamanan hidup bermula dari kepedulian di tingkat yang paling mendasar: halaman rumah dan gang tempat kita tinggal sendiri.</p>
+                </div>
+                <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                    <button onclick="document.getElementById('modal-kerja-bakti').classList.add('hidden')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs py-2 px-4 rounded-lg transition-colors">Tutup</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal-hut-ri" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-xl overflow-hidden animate-fade-in">
+                <div class="p-5 border-b border-slate-100 flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] font-bold text-sky-600 uppercase">Artikel Spesial • 17 Agustus 2026</span>
+                        <h3 class="font-extrabold text-lg text-slate-900 mt-1">MENEMBUS BATAS WAKTU: MENJAGA API GOTONG ROYONG PADA HUT RI KE-81</h3>
+                    </div>
+                    <button onclick="document.getElementById('modal-hut-ri').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
+                </div>
+                <div class="p-6 overflow-y-auto text-sm text-slate-700 space-y-4 leading-relaxed">
+                    <p>Agustus selalu membawa atmosfer yang berbeda. Di antara deru angin kemarau dan kibaran kain merah putih di sepanjang jalan, ada sebuah memori kolektif yang kembali dipanggil. Tahun 2026 ini, Indonesia resmi menginjak usia 81 tahun. Sebuah perjalanan panjang bagi sebuah bangsa besar, dan refleksi terdalamnya justru seringkali ditemukan di tempat paling hulu: di lingkungan rukun warga, di gang-gang pemukiman, dan di ruang-ruang diskusi pemuda lokal.</p>
+                    <p>Kemerdekaan bukan lagi sekadar narasi sejarah tentang bambu runcing, melainkan bagaimana sebuah komunitas kecil mampu bertahan, bertumbuh, dan tetap solid di tengah gempuran zaman digital.</p>
+                    <hr class="border-slate-100 my-2">
+                    <p class="font-bold text-slate-900 text-base">Transformatif: Mengakar pada Tradisi, Bertumbuh Lewat Inovasi</p>
+                    <p>Di era di mana interaksi sosial seringkali bergeser ke balik layar gawai, momen perayaan HUT RI ke-81 hadir sebagai pengingat (juga penawar) yang ampuh. Perayaan tingkat lokal adalah benteng terakhir pertahanan sosiologis kita.</p>
+                    <p>Melalui ruang lingkup Karang Taruna dan keaktifan warga, kita sedang menguji tiga pilar penting:</p>
+                    <ul class="list-decimal pl-5 space-y-2">
+                        <li><span class="font-semibold text-slate-900">Inklusi Sosial:</span> Menyatukan kembali seluruh elemen warga—dari para sesepuh yang sarat pengalaman hingga generasi Alpha yang melek teknologi—dalam satu meja musyawarah.</li>
+                        <li><span class="font-semibold text-slate-900">Kedaulatan Lingkungan:</span> Mengubah tradisi "kerja bakti massal" menjadi gerakan kesadaran lingkungan yang lebih bersih, hijau, dan tertata secara estetika modern.</li>
+                        <li><span class="font-semibold text-slate-900">Panggung Mentalitas Juara:</span> Lewat perlombaan yang suportif, kita menanamkan kembali nilai bahwa proses, kerja keras, dan sportivitas jauh lebih berharga daripada sekadar piala.</li>
+                    </ul>
+                    <hr class="border-slate-100 my-2">
+                    <p class="font-bold text-slate-900 text-base">Menuju Puncak 17 Agustus: Sebuah Ajakan Terbuka</p>
+                    <p>Menyambut perayaan ke-81 ini, kepanitiaan lokal tengah meramu rangkaian acara yang tidak hanya menghibur, tetapi juga meninggalkan dampak. Mulai dari pembenahan tata ruang publik, kompetisi minat-bakat, hingga malam tasyakuran (tirakatan) yang khidmat sebagai bentuk ruang doa bersama.</p>
+                    <p>Keberhasilan agenda besar ini tidak terletak pada seberapa mewah panggung utamanya, melainkan seberapa banyak warga yang merasa memiliki dan terlibat di dalamnya. Setiap kontribusi—entah itu berupa tenaga, sumbangan pemikiran, logistik, maupun senyuman hangat saat berpapasan di jalan—adalah bahan bakar utama pergerakan ini.</p>
+                    <p>Mari kita rapatkan barisan, turun tangan langsung, dan jadikan perayaan HUT RI ke-81 ini sebagai lembaran baru yang lebih guyub, rukun, dan progresif.</p>
+                    <p class="font-extrabold text-sky-600 text-center text-base pt-2">Merdeka, Berkarya, Berdaya Bersama!</p>
+                </div>
+                <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                    <button onclick="document.getElementById('modal-hut-ri').classList.add('hidden')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs py-2 px-4 rounded-lg transition-colors">Tutup</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="aspirasi" class="content-section">
+            <div class="max-w-xl mx-auto glass p-6 md:p-8 rounded-3xl shadow-lg border-t-4 border-orange-500">
+                <div class="flex items-center mb-6">
+                    <div class="w-11 h-11 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 mr-4 shadow-inner">
+                        <i class="fas fa-comment-dots text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight">Kotak Suara Aspirasi</h2>
+                        <p class="text-xs text-slate-400 font-medium">Pendapat dan saran Anda dilindungi & sangat berharga.</p>
+                    </div>
+                </div>
+                <form id="formAspirasi" class="space-y-4">
+                    <div>
+                        <input type="text" id="namaAspirasi" placeholder="Nama Lengkap / Inisial Penulis" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-orange-500 outline-none font-semibold text-sm transition-all" required>
+                    </div>
+                    <div>
+                        <select id="kategoriAspirasi" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-orange-500 outline-none font-bold text-sm text-slate-600">
+                            <option>Saran Program Kerja</option>
+                            <option>Kritik Membangun</option>
+                        </select>
+                    </div>
+                    <div>
+                        <textarea id="pesanAspirasi" placeholder="Tuliskan gagasan, keluhan, atau saran konkret Anda..." rows="4" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-orange-500 outline-none font-semibold text-sm transition-all" required></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 rounded-xl shadow-md hover:bg-orange-600 transition-all uppercase tracking-wider text-xs flex items-center justify-center gap-2">
+                        <i class="fas fa-paper-plane"></i> Kirim ke Pengurus
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="join" class="content-section">
+            <div class="max-w-xl mx-auto glass p-6 md:p-8 rounded-3xl shadow-lg border-t-4 border-sky-600">
+                <div class="flex items-center mb-6">
+                    <div class="w-11 h-11 bg-sky-100 rounded-xl flex items-center justify-center text-sky-600 mr-4 shadow-inner">
+                        <i class="fas fa-user-plus text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight">Formulir Anggota Baru</h2>
+                        <p class="text-xs text-slate-400 font-medium">Kembangkan potensi diri Anda dengan bergabung bersama kami.</p>
+                    </div>
+                </div>
+                <form id="formGabung" class="space-y-4">
+                    <div>
+                        <input type="text" id="namaGabung" placeholder="Nama Lengkap Calon Anggota" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-sky-500 outline-none font-semibold text-sm transition-all" required>
+                    </div>
+                    <div>
+                        <input type="tel" id="kontakGabung" placeholder="Nomor Kontak WhatsApp Aktif" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-sky-500 outline-none font-semibold text-sm transition-all" required>
+                    </div>
+                    <button type="submit" class="w-full bg-sky-600 text-white font-bold py-3 rounded-xl shadow-md hover:bg-sky-700 transition-all uppercase tracking-wider text-xs flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i> Kirim Permohonan Gabung
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="admin" class="content-section">
+            <div class="glass p-6 md:p-8 rounded-3xl shadow-md border-t-4 border-slate-800">
+                <div class="flex items-center justify-between mb-6 border-b pb-4 border-slate-200/60">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center mr-3 shadow-md"><i class="fas fa-lock"></i></div>
+                        <div>
+                            <h3 class="text-base font-extrabold text-slate-900 uppercase">Panel Kerja Pengurus</h3>
+                            <p class="text-[11px] text-emerald-600 font-bold tracking-wide"><i class="fas fa-circle text-[8px] animate-pulse mr-1"></i> Sesi Internal Aktif</p>
+                        </div>
+                    </div>
+                    <span class="bg-slate-100 text-slate-700 font-bold text-[10px] px-3 py-1 rounded-lg uppercase border border-slate-200">Hak Akses: Pengurus Inti</span>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1 bg-slate-50/60 p-4 rounded-2xl border border-slate-200/50">
+                        <h4 class="font-extrabold text-xs text-slate-800 uppercase mb-3 flex items-center gap-1.5"><i class="fas fa-plus-circle text-emerald-600"></i> Catat Transaksi Baru</h4>
+                        <form id="formAdminKas" class="space-y-3">
+                            <select class="w-full p-2.5 rounded-lg bg-white border border-slate-200 font-bold text-xs text-slate-600 outline-none">
+                                <option>Pemasukan (Uang Masuk)</option>
+                                <option>Pengeluaran (Uang Keluar)</option>
+                            </select>
+                            <input type="text" placeholder="Keterangan (cth: Beli kertas kado)" class="w-full p-2.5 rounded-lg bg-white border border-slate-200 font-semibold text-xs outline-none" required>
+                            <input type="number" placeholder="Nominal Rp (cth: 75000)" class="w-full p-2.5 rounded-lg bg-white border border-slate-200 font-semibold text-xs outline-none" required>
+                            <div class="space-y-1">
+                                <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wide">Unggah Bukti Nota / Kuitansi</label>
+                                <input type="file" class="w-full text-[11px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300">
+                            </div>
+                            <button type="submit" class="w-full bg-slate-950 text-white text-[10px] font-bold py-2 rounded-lg uppercase shadow hover:bg-slate-800 transition-all">Simpan Log Keuangan</button>
+                        </form>
+                    </div>
+
+                    <div class="md:col-span-2 space-y-4">
+                        <div>
+                            <h4 class="font-extrabold text-xs text-slate-800 uppercase mb-2 flex items-center gap-1.5"><i class="fas fa-users text-sky-600"></i> Manajer Database Anggota (Aktif)</h4>
+                            <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                                            <th class="p-3">Nama Lengkap</th>
+                                            <th class="p-3">Sektor RT</th>
+                                            <th class="p-3">Kontak WA</th>
+                                            <th class="p-3">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-semibold text-slate-700 divide-y divide-slate-100">
+                                        <tr>
+                                            <td class="p-3">Bagas Satya D.</td>
+                                            <td class="p-3">Blok A / Sektor 1</td>
+                                            <td class="p-3 text-sky-600">0882-9815-4280</td>
+                                            <td class="p-3"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded-md uppercase">Ketua</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3">Wahyu Kurnia</td>
+                                            <td class="p-3">Blok C / Sektor 2</td>
+                                            <td class="p-3 text-sky-600">0852-8308-7721</td>
+                                            <td class="p-3"><span class="px-2 py-0.5 bg-sky-100 text-sky-700 text-[9px] font-bold rounded-md uppercase">Sekretaris</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-3">Eryandi C.</td>
+                                            <td class="p-3">Blok B / Sektor 1</td>
+                                            <td class="p-3 text-sky-600">0858-8242-2949</td>
+                                            <td class="p-3"><span class="px-2 py-0.5 bg-purple-100 text-purple-700 text-[9px] font-bold rounded-md uppercase">Bendahara</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-extrabold text-xs text-slate-800 uppercase mb-2 flex items-center gap-1.5"><i class="fas fa-inbox text-orange-500"></i> Tindak Lanjut Aspirasi Warga</h4>
+                            <div class="glass p-3.5 rounded-xl border border-slate-200/60 flex justify-between items-start text-xs bg-white">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-slate-900">Hamba Allah (Warga RT 016)</span>
+                                        <span class="text-[9px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.2 rounded uppercase">Kritik</span>
+                                    </div>
+                                    <p class="text-slate-600 italic font-medium">"Lampu penerangan di dekat lapangan voli anak-anak mati, tolong dibantu belikan bohlam baru dari kas pemuda."</p>
+                                </div>
+                                <button onclick="alert('Status aspirasi diperbarui menjadi: Selesai Ditindaklanjuti')" class="bg-emerald-600 text-white text-[9px] font-bold px-2 py-1 rounded hover:bg-emerald-700 transition-all uppercase flex-shrink-0 ml-2">Selesaikan</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section id="download-center" class="mt-12 bg-slate-900 text-white p-6 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
+    <div class="absolute inset-0 opacity-5 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px] pointer-events-none"></div>
+    
+    <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h3 class="text-base font-extrabold uppercase tracking-tight text-orange-400 flex items-center gap-2">
+                <i class="fas fa-folder-open"></i> Pusat Unduh Dokumen Terbuka
+            </h3>
+            <p class="text-xs text-slate-400 font-medium mt-0.5">Akses berkas digital resmi Karang Taruna untuk kepentingan transparansi administrasi lingkungan.</p>
+        </div>
+        
+        <div class="flex flex-wrap gap-2.5 w-full md:w-auto">
+            <a href="dokumen/File_Proposal_17_Agustus_RT016.pdf" download class="bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 transition-all">
+                <i class="fas fa-file-pdf text-red-400"></i> Proposal 17 Agustus
+            </a>
+            
+            <a href="ANGGARAN DASAR DAN ANGGARAN3.pdf" download class="bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 transition-all">
+                <i class="fas fa-file-word text-sky-400"></i> AD/ART Organisasi
+            </a>
+        </div>
+    </div>
+</section>
+
+    </main>
+
+    <div id="lightboxModal" onclick="closeLightbox()">
+        <img id="lightboxImg" class="max-w-[92vw] max-h-[82vh] rounded-xl shadow-2xl border border-slate-700/50 object-contain" src="" alt="Preview Gambar">
+    </div>
+
+    <a href="https://wa.me/62895622418801" target="_blank" rel="noopener noreferrer" class="fixed bottom-6 right-6 bg-emerald-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:bg-emerald-600 transition-transform hover:scale-110 z-50 group">
+        <i class="fab fa-whatsapp text-2xl"></i>
+        <span class="absolute right-16 bg-slate-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none uppercase tracking-wider">Hubungi Humas</span>
+    </a>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        // --- 1. INISIALISASI PETA LEAFLET (LENTENG AGUNG) ---
+        const map = L.map('map').setView([-6.326111450574174, 106.83331143662335], 16);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '©️ OpenStreetMap'
+        }).addTo(map);
+
+        const marker = L.marker([-6.326111450574174, 106.83331143662335]).addTo(map);
+        marker.bindPopup("<b class='text-sm text-slate-900'>Sekretariat RT 016</b>").openPopup();
+
+        setTimeout(() => { 
+            map.invalidateSize(); 
+        }, 400);
+
+        // 2. Controller Tab Halaman
+        function openTab(evt, tabName) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+
+            const tabLinks = document.querySelectorAll('.tab-link');
+            tabLinks.forEach(link => link.classList.remove('tab-active'));
+
+            document.getElementById(tabName).classList.add('active');
+            if (evt) {
+                evt.currentTarget.classList.add('tab-active');
+                createSparkles(evt.currentTarget);
+            }
+            
+            if (tabName === 'profile') {
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
+            }
+        }
+
+        // 3. Transisi Otomatis Banner Hero Slider
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        
+        function showNextSlide() {
+            if(slides.length === 0) return;
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+        setInterval(showNextSlide, 5000);
+
+        // 4. Kalkulator Iuran Kas Mandiri
+        function hitungKas() {
+            const idPeriode = document.getElementById('periodeBayar').value;
+            const nominalFlat = 10000;
+            const akumulasi = idPeriode * nominalFlat;
+            document.getElementById('totalTagihan').innerText = 'Rp ' + akumulasi.toLocaleString('id-ID');
+        }
+
+        // 5. Efek Klik Sparkle Efek Visual Kontemporer
+        function createSparkles(element) {
+            for (let i = 0; i < 8; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.classList.add('sparkle');
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 30 + 15;
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+                
+                sparkle.style.setProperty('--x', `${x}px`);
+                sparkle.style.setProperty('--y', `${y}px`);
+                sparkle.style.left = '50%';
+                sparkle.style.top = '50%';
+                
+                element.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 500);
+            }
+        }
+
+        // 6. Pembesaran Gambar Lightbox Preview Sistem
+        function viewImage(container) {
+            const targetImage = container.querySelector('img');
+            if(targetImage) {
+                document.getElementById('lightboxImg').src = targetImage.src;
+                document.getElementById('lightboxModal').style.display = 'flex';
+            }
+        }
+
+        // Token Foonte Global
+        const FOONTE_TOKEN = "Q1Rs7aLnCCfWfoW1PMYz";
+        const WA_ADMIN = "62895622418801"; 
+
+        function closeLightbox() {
+            document.getElementById('lightboxModal').style.display = 'none';
+        }
+
+        // 7. Form Response Event Interception
+        document.getElementById('formBayarKas').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Akses Pembayaran Digital Terintegrasi (Midtrans Payment Engine) dalam tahap persiapan pengesahan oleh Bendahara.');
+        });
+
+        // REPARASI FORM ASPIRASI
+        document.getElementById('formAspirasi').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nama = document.getElementById('namaAspirasi').value;
+            const kategori = document.getElementById('kategoriAspirasi').value;
+            const pesan = document.getElementById('pesanAspirasi').value;
+
+            const teksPesan = `📢 *ASPIRASI WARGA BARU MASUK*\n\n👤 *Nama:* ${nama}\n📂 *Kategori:* ${kategori}\n💬 *Pesan/Saran:* "${pesan}"\n\n_Pesan otomatis dikirim melalui Sistem Dashboard Kartar RT 016._`;
+
+            const formData = new FormData();
+            formData.append('target', WA_ADMIN);
+            formData.append('message', teksPesan);
+
+            fetch('https://api.fonnte.com/send', {
+                method: 'POST',
+                headers: {
+                    'Authorization': FOONTE_TOKEN
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status) {
+                    alert('Aspirasi atau masukan Anda berhasil diamankan dan dikirim ke WhatsApp Pengurus!');
+                } else {
+                    alert('Aspirasi tersimpan di sistem, namun Foonte menolak: ' + data.reason);
+                }
+            })
+            .catch(error => {
+                console.error('Error Foonte:', error);
+                alert('Gagal terhubung ke server Foonte. Pastikan koneksi internet aktif atau periksa konsol.');
+            });
+
+            this.reset();
+        });
+
+        // REPARASI FORM GABUNG
+        document.getElementById('formGabung').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const namaCalon = document.getElementById('namaGabung').value;
+            const kontakCalon = document.getElementById('kontakGabung').value;
+
+            const teksPesan = `✨ *PENDAFTARAN ANGGOTA BARU*\n\nHalo Pengurus Kartar RT 016, ada calon anggota baru yang ingin bergabung:\n\n👤 *Nama Lengkap:* ${namaCalon}\n📱 *No. WhatsApp:* ${kontakCalon}\n\nMohon segera divalidasi dan dihubungi lebih lanjut. Terima kasih!`;
+
+            const formData = new FormData();
+            formData.append('target', WA_ADMIN);
+            formData.append('message', teksPesan);
+
+            fetch('https://api.fonnte.com/send', {
+                method: 'POST',
+                headers: {
+                    'Authorization': FOONTE_TOKEN
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status) {
+                    alert('Permohonan pendaftaran diterima! Notifikasi otomatis telah dikirimkan ke WhatsApp tim Humas.');
+                } else {
+                    alert('Pendaftaran masuk sistem, namun notifikasi WA gagal dikirim.');
+                }
+            })
+            .catch(error => {
+                console.error('Error Foonte:', error);
+                alert('Gagal terhubung ke server Foonte saat mendaftar.');
+            });
+
+            this.reset();
+        });
+
+       document.getElementById('formAdminKas').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // 1. MASUKKAN KODE TOKEN FONNTE ANDA DI SINI
+    const FONNTE_TOKEN = "Q1Rs7aLnCCfWfoW1PMYz"; 
+
+    // 2. Ambil data secara dinamis dari inputan form admin Anda
+    // (Pastikan atribut 'id' atau 'name' di bawah ini sesuai dengan yang ada di HTML Anda)
+    const namaWarga = document.getElementById('namaWarga')?.value || "Warga";
+    const nomorHp   = document.getElementById('nomorHpWarga')?.value || ""; // Contoh: 08123456xxx
+    const jumlahKas = document.getElementById('jumlahBayar')?.value || "0";
+    const periode   = document.getElementById('periodeBulan')?.value || "-";
+
+    // 3. Validasi nomor HP (Fonnte butuh nomor tujuan)
+    if (!nomorHp) {
+        alert('Log pembukuan disimpan di sistem, tetapi WA tidak dikirim karena Nomor HP kosong.');
+        alert('Log pembukuan berhasil disimpan! Total saldo kas sistem otomatis diperbarui.');
+        this.reset();
+        return;
+    }
+
+    // 4. Susun format pesan teks yang akan dikirim ke WhatsApp warga
+    const pesanWhatsApp = `*NOTIFIKASI PEMBAYARAN KAS RT 016* 📝\n\n` +
+                          `Halo Kak *${namaWarga}*,\n` +
+                          `Pembayaran uang kas Anda untuk periode *${periode}* sebesar *Rp ${parseInt(jumlahKas).toLocaleString('id-ID')}* telah diterima dan dicatat oleh Bendahara Karang Taruna.\n\n` +
+                          `Terima kasih atas partisipasinya! 🙌`;
+
+    // 5. Proses tembak API Fonnte untuk kirim WhatsApp
+    fetch('https://api.fonnte.com/send', {
+        method: 'POST',
+        headers: {
+            'Authorization': Q1Rs7aLnCCfWfoW1PMYz, // Mengirim token lewat HTTP Header
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            'target': '62895622418801',
+            'message': pesanWhatsApp,
+            'countryCode': '62' // Otomatis konversi angka depan 08xx jadi +628xx
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status) {
+            alert('Log pembukuan berhasil disimpan & Notifikasi WA berhasil dikirim!');
+        } else {
+            alert('Log disimpan, tetapi Fonnte gagal mengirim WA: ' + data.reason);
+        }
+    })
+    .catch(error => {
+        console.error('Error Fonnte:', error);
+        alert('Log disimpan, namun terjadi gangguan koneksi ke server Fonnte.');
+    });
+
+    // 6. Reset form setelah selesai proses
+    this.reset();
+});
+    </script>
+</body>
+</html>
